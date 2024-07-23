@@ -1,0 +1,20 @@
+div#elementor-panel-elements-search-area {
+    display: none !important;
+}
+
+div#elementor-panel-elements-categories {
+    display: none !important;
+}
+
+#elementor-panel-elements-navigation .elementor-component-tab[data-tab="categories"], #elementor-panel-elements-navigation .elementor-component-tab[data-tab="global"] {
+    display: none !important;
+}
+
+#elementor-template-library-header-menu .elementor-component-tab[data-tab="templates/blocks"], 
+#elementor-template-library-header-menu .elementor-component-tab[data-tab="templates/pages"] {
+    display: none !important;
+}
+
+#elementor-template-library-templates[data-template-source="remote"] {
+    display: none !important;
+}
