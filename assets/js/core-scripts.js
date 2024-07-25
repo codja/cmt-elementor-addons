@@ -1,14 +1,31 @@
-(function($) {
-	/**
- 	 * @param $scope The Widget wrapper element as a jQuery element
-	 * @param $ The jQuery alias
-	 */ 
-	var WidgetHelloWorldHandler = function($scope, $) {
-		console.log($scope);
-	};
-	
-	// Make sure you run this code under Elementor.
-	$(window).on('elementor/frontend/init', function() {
-		elementorFrontend.hooks.addAction('frontend/element_ready/hello-world.default', WidgetHelloWorldHandler);
-	});
-})(jQuery);
+(function() {
+	updateNonce();
+	async function getRefreshedNonce() {
+		try {
+			let response = await fetch( cmform.url, {
+				method: 'POST',
+				headers: new Headers( {
+					'Content-Type': 'application/x-www-form-urlencoded',
+				} ),
+				body: new URLSearchParams({
+					action: 'cm_get_refreshed_nonce',
+				} ).toString(),
+				credentials: 'same-origin',
+			} );
+
+			response = await response.json();
+
+			return response?.data?._nonce ?? '';
+		} catch( e ) {
+			return '';
+		}
+	}
+
+	async function updateNonce() {
+		const updatedNonce = await getRefreshedNonce();
+		if ( updatedNonce ) {
+			cmform._nonce = updatedNonce;
+		}
+
+	}
+})();

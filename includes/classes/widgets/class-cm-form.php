@@ -2,9 +2,11 @@
 
 namespace ElementorCmAddons\classes\widgets;
 
-use Elementor\Widget_Base;
 use Elementor\Controls_Manager;
-use ElementorCmAddons\classes\Helpers;
+use Elementor\Core\Schemes\Color;
+use Elementor\Widget_Base;
+use ElementorCmAddons\includes\classes\helpers\Helpers;
+use ElementorCmAddons\includes\classes\helpers\Utils;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -14,10 +16,10 @@ class Cm_Form extends Widget_Base {
 
 	public function get_script_depends() {
 		wp_register_script(
-			'cm-payments-tablepress-script',
-			plugins_url( '/assets/js/cm-form.js', __FILE__ ),
+			'cm-form-script',
+			ELEMENTOR_CM_ADDONS_URL . 'assets/js/cm-form.js',
 			[ 'elementor-frontend' ],
-			filemtime( plugin_dir_path( __FILE__ ) .  'assets/js/cm-form.js' ),
+			Utils::get_version_file( ELEMENTOR_CM_ADDONS_PATH . 'assets/js/cm-form.js' ),
 			true
 		);
 
@@ -26,10 +28,10 @@ class Cm_Form extends Widget_Base {
 
 	public function get_style_depends() {
 		wp_register_style(
-			'cm-payments-tablepress-style',
-			plugins_url( '/assets/css/cm-form.css', __FILE__ ),
+			'cm-form-style',
+			ELEMENTOR_CM_ADDONS_URL . 'assets/css/cm-form.css',
 			[],
-			filemtime( plugin_dir_path( __FILE__ ) . 'assets/css/cm-form.css' )
+			Utils::get_version_file( ELEMENTOR_CM_ADDONS_PATH . 'assets/css/cm-form.css' )
 		);
 
 		return [ 'cm-form-style' ];
@@ -629,62 +631,6 @@ class Cm_Form extends Widget_Base {
 		);
 
 		$this->add_control(
-			'show_employment',
-			array(
-				'label'        => __( 'Show Employment Field', 'cmt-elementor-addons' ),
-				'type'         => Controls_Manager::SWITCHER,
-				'label_on'     => __( 'Show', 'cmt-elementor-addons' ),
-				'label_off'    => __( 'Hide', 'cmt-elementor-addons' ),
-				'return_value' => 'yes',
-				'default'      => 'yes',
-			)
-		);
-
-		$this->add_control(
-			'employment_placeholder',
-			array(
-				'label'     => __( 'Employment Placeholder', 'cmt-elementor-addons' ),
-				'type'      => Controls_Manager::TEXT,
-				'condition' => array( 'show_employment' => 'yes' ),
-			)
-		);
-
-		$this->add_control(
-			'employments',
-			array(
-				'label'     => __( 'Employment', 'cmt-elementor-addons' ),
-				'type'      => Controls_Manager::SELECT2,
-				'multiple'  => true,
-				'options'   => array(
-					'full_time'     => __( 'Full Time', 'cmt-elementor-addons' ),
-					'part_time'     => __( 'Part Time', 'cmt-elementor-addons' ),
-					'retired'       => __( 'Retired', 'cmt-elementor-addons' ),
-					'self_employed' => __( 'Self Employed', 'cmt-elementor-addons' ),
-					'student'       => __( 'Student', 'cmt-elementor-addons' ),
-					'unemplyed'     => __( 'Unemployed', 'cmt-elementor-addons' ),
-				),
-				'default'   => array( 'full_time' ),
-				'condition' => array( 'show_employment' => 'yes' ),
-			)
-		);
-
-		$this->add_control(
-			'employment_error',
-			array(
-				'label'     => __( 'Employment Error Text', 'cmt-elementor-addons' ),
-				'type'      => Controls_Manager::TEXT,
-				'condition' => array( 'show_employment' => 'yes' ),
-			)
-		);
-
-		$this->add_control(
-			'employment_divider',
-			array(
-				'type' => Controls_Manager::DIVIDER,
-			)
-		);
-
-		$this->add_control(
 			'password_autogenerate',
 			array(
 				'label'        => __( 'Autogenerate', 'cmt-elementor-addons' ),
@@ -1124,12 +1070,13 @@ class Cm_Form extends Widget_Base {
 		$settings = $this->get_settings_for_display();
 		$settings = Helpers::instance()->lang_settings( $settings, $settings['language'] );
 
-		$routes = array(
+		$routes = [
+			'antelope' => 'register_antelope',
 			'partners' => 'register_partners',
 			'panda'    => 'register_panda',
-		);
+		];
 
-		switch ( $settings['type_form'] ) {
+		switch ($settings['type_form']) {
 			case 'popup':
 				$type_class = ' cm-form-container_popup';
 				break;
@@ -1140,219 +1087,178 @@ class Cm_Form extends Widget_Base {
 				$type_class = '';
 		}
 
-		$is_popup            = $settings['type_form'] === 'popup';
+		$is_popup = $settings['type_form'] === 'popup';
 		$show_thank_you_page = $settings['show_thank_you_page'];
-
-		$output = "<div class='cm-form-container " . $settings['language'] . ' ' . $settings['form_style'] . $type_class . "'><div class='cm-form-wrap' style='background-color: " . $settings['background_color'] . ";'>";
-
-		if ( false && $show_thank_you_page === 'yes' ) { //temp
-			$output .= '<iframe class="cm-form-thank-you-page" src="https://lp2.cmtrading.com/thankyoupage" scrolling="no"></iframe>';
-		}
-
-		if ( $is_popup ) {
-			$output .= '<div class="cm-form-wrap__popup-content-wrap">';
-		}
-
-		$output .=
-			"<h3 style='color: " . $settings['title_color'] . '; font-size: ' . $settings['title_size'] . 'px; text-align: ' . $settings['title_align'] . '; font-family: ' . $settings['title_font_family'] . '; font-weight: ' . $settings['title_font_weight'] . ";' class='cm-form-title'>" . $settings['title'] . "</h3>
-			<h4 style='color: " . $settings['subtitle_color'] . '; font-size: ' . $settings['subtitle_size'] . 'px; text-align: ' . $settings['title_align'] . '; font-family: ' . $settings['subtitle_font_family'] . '; font-weight: ' . $settings['subtitle_font_weight'] . ";' class='cm-form-subtitle'>" . $settings['subtitle'] . "</h4>
-			<form action='/' method='POST' class='cm-form" . ( $settings['language'] === 'ar-SA' ? ' arabic' : '' ) . ( $settings['file_download'] === 'yes' ? ' file-download' : '' ) . ( $is_popup ? ' popup-form' : '' ) . "' id='frm-lp' name='frm-lp' data-route='" . $routes[ $settings['form_action'] ] . "'>
-				<input type='hidden' name='language' value='" . $settings['language'] . "' />";
-
-		if ( $settings['form_action'] === 'partners' ) {
-			$output .= "<input type='hidden' name='postRegistrationAction' value='" . $settings['post_partners_reg_action'] . "' />";
-		}
-
-		if ( $settings['form_action'] === 'panda' ) {
-			$output .= "<input type='hidden' name='postRegistrationAction' value='" . $settings['post_panda_reg_action'] . "' />";
-		}
-
-		if ( $settings['include_referrer'] ) {
-			$output .= "<input type='hidden' name='landingPageUrl' value='' />";
-		}
-		$output .= "<input type='hidden' name='referral' value='' />";
-		$output .= "<input type='hidden' name='vl-cid' value='' id='rgbc-gcid'/>";
-
-		if ( $settings['post_panda_reg_action'] === 'CustomUrl' || $settings['post_partners_reg_action'] === 'CustomUrl' ) {
-			$output .= "<input type='hidden' name='redirectToPage' value='" . $settings['redirect_link'] . "' />";
-		}
-
-		if ( $settings['registration_webinar'] === 'yes' ) {
-			$output .= "<input type='hidden' name='webinar_key' value='" . $settings['webinar_key'] . "' />";
-		}
-
-		if ( $settings['file_download'] && $settings['file_url'] !== '' ) {
-			$output .= "<a id='file-download-link' href='" . $settings['file_url'] . "' style='display: none;' download></a>";
-		}
-
-		if ( $settings['show_firstname'] ) {
-			$output .=
-			"<div class='cm-form-input-container cm-form-firstname-container'>
-				<input id='firstname' style='font-family: " . $settings['font_family'] . ";' type='text' name='firstname' class='cm-form-firstname' placeholder='" . $settings['firstname_placeholder'] . "' />
-				<p id='firstname-error' class='cm-form-error' style='color: " . $settings['error_color'] . '; font-family: ' . $settings['font_family'] . ";'>" . $settings['firstname_error'] . '</p>
-			</div>';
-		}
-
-		if ( $settings['show_lastname'] ) {
-			$output .=
-			"<div class='cm-form-input-container cm-form-lastname-container'>
-				<input id='lastname' style='font-family: " . $settings['font_family'] . ";' type='text' name='lastname' class='cm-form-lastname' placeholder='" . $settings['lastname_placeholder'] . "' />
-				<p id='lastname-error' class='cm-form-error' style='color: " . $settings['error_color'] . '; font-family: ' . $settings['font_family'] . ";'>" . $settings['lastname_error'] . '</p>
-			</div>';
-		}
-
-		if ( $settings['show_email'] ) {
-			$output .=
-			"<div class='cm-form-input-container cm-form-email-container'>
-				<input id='email' style='font-family: " . $settings['font_family'] . ";' type='email' name='email' class='cm-form-email' placeholder='" . $settings['email_placeholder'] . "' />
-				<p id='email-error' class='cm-form-error' style='color: " . $settings['error_color'] . '; font-family: ' . $settings['font_family'] . ";'>" . $settings['email_error'] . '</p>';
-
-			if ( $settings['email_suggestions'] ) {
-				$output .= '<ul class="cm-form-suggestions cm-form-hidden">';
-				foreach ( $settings['email_suggestions'] as $suggestion ) {
-					if ( ! empty( $suggestion['email_suggestion'] ) ) {
-						$output .= '<li class="cm-form-suggestions__suggestion"><span class="cm-form-suggestions__placeholder"></span>' .
-							esc_html( '@' . $suggestion['email_suggestion'] ) . '</li>';
-					}
-				}
-				$output .= '</ul>';
-			}
-
-			$output .= '</div>';
-		}
-
-		if ( $settings['show_country'] ) {
-			$output .= Helpers::instance()->get_country_options( $settings );
-		}
-
-		if ( $settings['show_phone'] ) {
-			$output .=
-			"<div class='cm-form-input-container cm-form-phone-container'>
-				<input id='phonecountry' type='phone' style='font-family: " . $settings['font_family'] . ";' name='phonecountry' value='+' class='cm-form-phone-prefix' readonly />
-				<input id='phone' style='font-family: " . $settings['font_family'] . ";' type='phone' pattern='\d*' name='phone' class='cm-form-phone' placeholder='" . $settings['phone_placeholder'] . "' />
-				<p id='phone-error' class='cm-form-error' style='color: " . $settings['error_color'] . '; font-family: ' . $settings['font_family'] . ";'>" . $settings['phone_error'] . "</p>
-				<p id='phone-digits-error' class='cm-form-error' style='color: " . $settings['error_color'] . '; font-family: ' . $settings['font_family'] . ";'>" . $settings['phone_digits_error'] . '</p>
-			</div>';
-		}
-
-		if ( $settings['show_employment'] ) {
-			$output .=
-			"<div class='cm-form-input-container cm-form-employment-container'>
-						<select id='employment' style='font-family: " . $settings['font_family'] . ";' name='EmploymentStatus' class='cm-form-employment'>
-							<option value='' disabled selected hidden>" . $settings['employment_placeholder'] . '</option>';
-			foreach ( $settings['employments'] as $employment ) {
-				if ( $employment === 'full_time' ) {
-					$output .= "<option value='47'>Full Time</option>";
-				}
-				if ( $employment === 'part_time' ) {
-					$output .= "<option value='48'>Part Time</option>";
-				}
-				if ( $employment === 'retired' ) {
-					$output .= "<option value='52'>Retired</option>";
-				}
-				if ( $employment === 'self_employed' ) {
-					$output .= "<option value='49'>Self Employed</option>";
-				}
-				if ( $employment === 'student' ) {
-					$output .= "<option value='50'>Student</option>";
-				}
-				if ( $employment === 'unemplyed' ) {
-					$output .= "<option value='51'>Unemployed</option>";
-				}
-			}
-			$output .= "</select>
-				<p id='employment-error' class='cm-form-error' style='color: " . $settings['error_color'] . '; font-family: ' . $settings['font_family'] . ";'>" . $settings['employment_error'] . '</p>
-			</div>';
-		}
-
-		$type_password_input = $settings['show_password'] ? 'password' : 'hidden';
-		$password_value      = $settings['password_autogenerate'] || ! $settings['show_password'] ? Helpers::instance()->random_password() : '';
-		$output             .=
-			"<div class='cm-form-input-container cm-form-password-container'>
-				<input 
-					id='password'
-					style='font-family: " . $settings['font_family'] . ";'
-					type='" . $type_password_input . "' name='password'
-					class='cm-form-password' placeholder='" . $settings['password_placeholder'] . "'
-					value='" . $password_value . "'
-				/>
-				<p id='password-error' class='cm-form-error' style='color: " . $settings['error_color'] . '; font-family: ' . $settings['font_family'] . ";'>" . $settings['password_error'] . '</p>
-			</div>';
-
-		$date_max    = gmdate( 'Y-m-d', strtotime( '-18 years' ) );
-		$date_min    = gmdate( 'Y-m-d', strtotime( '-100 years' ) );
-		$birthday_id = uniqid( 'birthday' );
-
-		if ( $settings['show_birthday'] ) {
-			$output .=
-				"<div class='cm-form-input-container cm-form-birthday-container'>
-					<input id='" . $birthday_id . "' style='font-family: " . $settings['font_family'] . ";' type='date' name='birthday' min='$date_min' max='$date_max' class='cm-form-birthday' placeholder='" . $settings['birthday_placeholder'] . "' required/>
-					<label for='" . $birthday_id . "'>" . $settings['birthday_placeholder'] . "</label>
-					<p id='birthday-error' class='cm-form-error' style='color: " . $settings['error_color'] . '; font-family: ' . $settings['font_family'] . ";'>" . $settings['birthday_error'] . '</p>
-				</div>';
-		}
-
-		if ( $settings['show_promocode'] ) {
-			$output .=
-				"<div class='cm-form-input-container cm-form-promocode-container'>
-					<input id='promocode' style='font-family: " . $settings['font_family'] . ";' type='text' name='promocode' class='cm-form-promocode' placeholder='" . $settings['promocode_placeholder'] . "' />
-					<p id='promocode-error' class='cm-form-error' style='color: " . $settings['error_color'] . '; font-family: ' . $settings['font_family'] . ";'>" . $settings['promocode_error'] . '</p>
-				</div>';
-		}
-
-		$output .=
-		"<div class='cm-form-input-container cm-form-submit-container'>
-			<button style='background: " . $settings['submit_background'] . '; color: ' . $settings['submit_color']
-				. '; font-size: ' . $settings['submit_size'] . 'px; font-weight: ' . $settings['submit_font_weight'] . '; border-radius:'
-				. $settings['submit_border_radius'] . 'px; font-family: ' . $settings['submit_font_family'] . ";' class='button cm-form-submit' />" . $settings['submit_text'] . '</button>
-		</div>';
-
-		if ( $settings['show_terms'] ) {
-			$output .=
-			"<div class='cm-form-input-container cm-form-terms-container'>
-				<input id='agree' style='font-family: " . $settings['font_family'] . ";' type='checkbox' checked class='cm-form-agree' name='agree' />
-				<div id='cm-form-terms-inner-container'>";
-
-			$output .=
-				"<span style='color: " . $settings['terms_color'] . '; font-family: ' . $settings['font_family'] . ";' class='cm-form-terms-text'>"
-				. wp_kses_post( $settings['terms_links'] ) .
-				'</span>';
-
-			$output .= "<p id='agree-error' class='cm-form-error' style='color: " . $settings['error_color'] . '; font-family: ' . $settings['font_family'] . ";'>" . $settings['agree_error'] . '</p>';
-
-			$output .=
-				"<span style='color: " . $settings['terms_color'] . '; font-family: ' . $settings['font_family'] . ";' class='cm-form-terms-text'>" . $settings['terms_text'] . '</span>
-				</div><!-- /.cm-form-terms-inner-container -->
-			</div><!-- /.cm-form-terms-container -->';
-		}
-
 		$popup_text = 'Creating Account...';
 
-		if ( $settings['language'] === 'ar-SA' ) {
+		if ($settings['language'] === 'ar-SA') {
 			$popup_text = 'فتح حساب تداول';
 		}
 
-		if ( $settings['file_download'] === 'yes' && $settings['file_url'] !== '' ) {
+		if ($settings['file_download'] === 'yes' && $settings['file_url'] !== '') {
 			$popup_text = 'Thank you for downloading our ebook';
 		}
+		?>
+		<div class="cm-form-container <?php echo esc_attr( $settings['language'] . ' ' . $settings['form_style'] . $type_class ); ?>">
+		<div class="cm-form-wrap" style="background-color: <?php echo esc_attr( $settings['background_color'] ); ?>;">
+			<?php if ( false && $show_thank_you_page === 'yes' ) : // temp ?>
+				<iframe class="cm-form-thank-you-page" src="https://lp2.cmtrading.com/thankyoupage"
+				        scrolling="no"></iframe>
+			<?php endif; ?>
 
-		$output .= "</form>
-		</div><!-- /.cm-form-wrap -->
-			<div id='animation_popup'>
-				<div id='animation_container'>
-					<span>" . $popup_text . "</span>
-					<img src='" . plugins_url( '../assets/images/', __FILE__ ) . "loading.gif' />
-				</div>
-			</div>";
-		if ( $is_popup ) {
-			$output .= '<button class="cm-form-close-popup js-cmtrading-close-popup" type="button">X</button>';
-		}
+			<?php if ( $is_popup ) : ?>
+			<div class="cm-form-wrap__popup-content-wrap">
+				<?php endif; ?>
 
-		$output .= '</div><!-- /.cm-form-container -->';
-		if ( $is_popup ) {
-			$output .= '</div>';
-		}
-		echo $output;
+				<h3 style="color: <?php echo esc_attr( $settings['title_color'] ); ?>; font-size: <?php echo esc_attr( $settings['title_size'] ); ?>px; text-align: <?php echo esc_attr( $settings['title_align'] ); ?>; font-family: <?php echo esc_attr( $settings['title_font_family'] ); ?>; font-weight: <?php echo esc_attr( $settings['title_font_weight'] ); ?>;"
+				    class="cm-form-title">
+					<?php echo esc_html( $settings['title'] ); ?>
+				</h3>
+
+				<h4 style="color: <?php echo esc_attr( $settings['subtitle_color'] ); ?>; font-size: <?php echo esc_attr( $settings['subtitle_size'] ); ?>px; text-align: <?php echo esc_attr( $settings['title_align'] ); ?>; font-family: <?php echo esc_attr( $settings['subtitle_font_family'] ); ?>; font-weight: <?php echo esc_attr( $settings['subtitle_font_weight'] ); ?>;"
+				    class="cm-form-subtitle">
+					<?php echo esc_html( $settings['subtitle'] ); ?>
+				</h4>
+
+				<form action="/" method="POST"
+				      class="cm-form <?php echo esc_attr( $settings['language'] === 'ar-SA' ? ' arabic' : '' ) . esc_attr( $settings['file_download'] === 'yes' ? ' file-download' : '' ) . ( $is_popup ? ' popup-form' : '' ); ?>"
+				      id="frm-lp" name="frm-lp"
+				      data-route="<?php echo esc_attr( $routes[ $settings['form_action'] ] ); ?>">
+					<input type="hidden" name="language" value="<?php echo esc_attr( $settings['language'] ); ?>"/>
+
+					<?php if ( $settings['form_action'] === 'partners' ) : ?>
+						<input type="hidden" name="postRegistrationAction"
+						       value="<?php echo esc_attr( $settings['post_partners_reg_action'] ); ?>"/>
+					<?php endif; ?>
+
+					<?php if ( $settings['form_action'] === 'panda' ) : ?>
+						<input type="hidden" name="postRegistrationAction"
+						       value="<?php echo esc_attr( $settings['post_panda_reg_action'] ); ?>"/>
+					<?php endif; ?>
+
+					<?php if ( $settings['include_referrer'] ) : ?>
+						<input type="hidden" name="landingPageUrl" value=""/>
+					<?php endif; ?>
+
+					<input type="hidden" name="referral" value=""/>
+					<input type="hidden" name="vl-cid" value="" id="rgbc-gcid"/>
+
+					<?php if ( $settings['post_panda_reg_action'] === 'CustomUrl' || $settings['post_partners_reg_action'] === 'CustomUrl' ) : ?>
+						<input type="hidden" name="redirectToPage"
+						       value="<?php echo esc_attr( $settings['redirect_link'] ); ?>"/>
+					<?php endif; ?>
+
+					<?php if ( $settings['registration_webinar'] === 'yes' ) : ?>
+						<input type="hidden" name="webinar_key"
+						       value="<?php echo esc_attr( $settings['webinar_key'] ); ?>"/>
+					<?php endif; ?>
+
+					<?php if ( $settings['file_download'] && $settings['file_url'] !== '' ) : ?>
+						<a id="file-download-link" href="<?php echo esc_url( $settings['file_url'] ); ?>"
+						   style="display: none;" download></a>
+					<?php endif; ?>
+
+					<?php if ( $settings['show_firstname'] ) : ?>
+						<div class="cm-form-input-container cm-form-firstname-container">
+							<input id="firstname"
+							       style="font-family: <?php echo esc_attr( $settings['font_family'] ); ?>;" type="text"
+							       name="firstname" class="cm-form-firstname"
+							       placeholder="<?php echo esc_attr( $settings['firstname_placeholder'] ); ?>"/>
+							<p id="firstname-error" class="cm-form-error"
+							   style="color: <?php echo esc_attr( $settings['error_color'] ); ?>; font-family: <?php echo esc_attr( $settings['font_family'] ); ?>;"><?php echo esc_html( $settings['firstname_error'] ); ?></p>
+						</div>
+					<?php endif; ?>
+
+					<?php if ( $settings['show_lastname'] ) : ?>
+						<div class="cm-form-input-container cm-form-lastname-container">
+							<input id="lastname"
+							       style="font-family: <?php echo esc_attr( $settings['font_family'] ); ?>;" type="text"
+							       name="lastname" class="cm-form-lastname"
+							       placeholder="<?php echo esc_attr( $settings['lastname_placeholder'] ); ?>"/>
+							<p id="lastname-error" class="cm-form-error"
+							   style="color: <?php echo esc_attr( $settings['error_color'] ); ?>; font-family: <?php echo esc_attr( $settings['font_family'] ); ?>;"><?php echo esc_html( $settings['lastname_error'] ); ?></p>
+						</div>
+					<?php endif; ?>
+
+					<?php if ( $settings['show_email'] ) : ?>
+						<div class="cm-form-input-container cm-form-email-container">
+							<input id="email" style="font-family: <?php echo esc_attr( $settings['font_family'] ); ?>;"
+							       type="email" name="email" class="cm-form-email"
+							       placeholder="<?php echo esc_attr( $settings['email_placeholder'] ); ?>"/>
+							<p id="email-error" class="cm-form-error"
+							   style="color: <?php echo esc_attr( $settings['error_color'] ); ?>; font-family: <?php echo esc_attr( $settings['font_family'] ); ?>;"><?php echo esc_html( $settings['email_error'] ); ?></p>
+							<?php if ( $settings['email_suggestions'] ) : ?>
+								<ul class="cm-form-suggestions cm-form-hidden">
+									<?php foreach ( $settings['email_suggestions'] as $suggestion ) : ?>
+										<?php if ( ! empty( $suggestion['email_suggestion'] ) ) : ?>
+											<li class="cm-form-suggestions__suggestion"><span
+													class="cm-form-suggestions__placeholder"></span><?php echo esc_html( '@' . $suggestion['email_suggestion'] ); ?>
+											</li>
+										<?php endif; ?>
+									<?php endforeach; ?>
+								</ul>
+							<?php endif; ?>
+						</div>
+					<?php endif; ?>
+
+					<?php if ( $settings['show_country'] ) :
+						echo Helpers::instance()->get_country_options( $settings );
+					endif; ?>
+
+					<?php if ( $settings['show_phone'] ) : ?>
+						<div class="cm-form-input-container cm-form-phone-container">
+							<input id="phonecountry" type="phone"
+							       style="font-family: <?php echo esc_attr( $settings['font_family'] ); ?>;"
+							       name="phonecountry" value="+" class="cm-form-phone-prefix" readonly/>
+							<input id="phone" style="font-family: <?php echo esc_attr( $settings['font_family'] ); ?>;"
+							       type="phone" pattern="\d*" name="phone" class="cm-form-phone"
+							       placeholder="<?php echo esc_attr( $settings['phone_placeholder'] ); ?>"/>
+							<p id="phone-error" class="cm-form-error"
+							   style="color: <?php echo esc_attr( $settings['error_color'] ); ?>; font-family: <?php echo esc_attr( $settings['font_family'] ); ?>;"><?php echo esc_html( $settings['phone_error'] ); ?></p>
+							<p id="phone-digits-error" class="cm-form-error"
+							   style="color: <?php echo esc_attr( $settings['error_color'] ); ?>; font-family: <?php echo esc_attr( $settings['font_family'] ); ?>;"><?php echo esc_html( $settings['phone_digits_error'] ); ?></p>
+						</div>
+					<?php endif; ?>
+
+					<?php if ( $settings['show_birthday'] ) : ?>
+						<div class='cm-form-input-container cm-form-birthday-container'>
+							<input id='birthday' style='font-family: <?php echo esc_attr( $settings['font_family'] ); ?>;' type='date' name='birthday' class='cm-form-birthday' required/>
+							<label for='birthday'><?php echo esc_html( $settings['birthday_placeholder'] ); ?></label>
+							<p id='birthday-error' class='cm-form-error' style='color: <?php echo esc_attr( $settings['error_color'] ); ?>; font-family: <?php echo esc_attr( $settings['font_family'] ); ?>;'><?php echo esc_html( $settings['birthday_error'] ); ?></p>
+						</div>
+					<?php endif; ?>
+
+					<?php if ( $settings['show_promotion'] === 'yes' ) : ?>
+						<div class="cm-form-promotion-container">
+							<div class="cm-form-promotion-field">
+								<input type="checkbox" name="promotion" value="yes"/>
+								<p class="cm-form-promotion"><?php echo esc_html( $settings['promotion_text'] ); ?></p>
+							</div>
+						</div>
+					<?php endif; ?>
+
+					<div class="cm-form-submit-container">
+						<button type="submit" class="cm-form-submit"
+						        style="background-color: <?php echo esc_attr( $settings['submit_bg_color'] ); ?>; color: <?php echo esc_attr( $settings['submit_color'] ); ?>; font-family: <?php echo esc_attr( $settings['submit_font_family'] ); ?>; font-size: <?php echo esc_attr( $settings['submit_font_size'] ); ?>px; font-weight: <?php echo esc_attr( $settings['submit_font_weight'] ); ?>;">
+							<?php echo esc_html( $settings['submit_text'] ); ?>
+						</button>
+					</div>
+
+					<?php if ( $settings['show_security_notice'] ) : ?>
+						<div class="cm-form-security-container">
+							<img class="cm-form-security-img"
+							     src="<?php echo esc_attr( $settings['security_image']['url'] ); ?>"
+							     alt="<?php echo esc_attr( $settings['security_image_alt'] ); ?>"/>
+							<p class="cm-form-security-text"><?php echo esc_html( $settings['security_notice'] ); ?></p>
+						</div>
+					<?php endif; ?>
+
+				</form>
+			</div>
+		</div>
+		<?php if ( $is_popup ) : ?>
+			</div>
+		<?php endif;
 	}
 
 	protected function content_template() {
@@ -1420,23 +1326,6 @@ class Cm_Form extends Widget_Base {
 							<input id='phone' style='font-family: {{{settings.font_family}}};' type='phone' pattern='\d*' name='phone' class='cm-form-phone' placeholder='{{{settings.phone_placeholder}}}' />
 							<p id='phone-error' class='cm-form-error' style='color: {{{settings.error_color}}}; font-family: {{{settings.font_family}}};'>{{{settings.phone_error}}}</p>
 							<p id='phone-digits-error' class='cm-form-error' style='color: {{{settings.error_color}}}; font-family: {{{settings.font_family}}};'>{{{settings.phone_digits_error}}}</p>
-						</div>
-					<# } #>
-
-					<# if(settings.show_employment) { #>
-						<div class='cm-form-input-container cm-form-employment-container'>
-							<select id='EmploymentStatus' style='font-family: {{{settings.font_family}}};' name='EmploymentStatus' class='cm-form-employment'>
-								<option value='' disabled selected hidden>{{{settings.employment_placeholder}}}</option>
-								<# _.each( settings.employments, function( employment ) { #>
-									<# if(employment == 'full_time') #> <option value='47'>Full Time</option>
-									<# if(employment == 'part_time') #> <option value='48'>Part Time</option>
-									<# if(employment == 'retired') #> <option value='52'>Retired</option>
-									<# if(employment == 'self_employed') #> <option value='49'>Self Employed</option>
-									<# if(employment == 'student') #> <option value='50'>Student</option>
-									<# if(employment == 'unemplyed') #> <option value='51'>Unemployed</option>
-								<# }); #>
-							</select>
-							<p id='EmploymentStatus-error' class='cm-form-error' style='color: {{{settings.error_color}}}; font-family: {{{settings.font_family}}};'>{{{settings.employment_error}}}</p>
 						</div>
 					<# } #>
 

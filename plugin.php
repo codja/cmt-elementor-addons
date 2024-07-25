@@ -4,6 +4,7 @@ namespace ElementorCmAddons;
 
 use ElementorCmAddons\classes\widgets\Cm_Form;
 use ElementorCmAddons\classes\widgets\Cm_Iframe;
+use ElementorCmAddons\includes\classes\helpers\Utils;
 use ElementorCmAddons\traits\Singleton;
 
 class Plugin {
@@ -11,8 +12,16 @@ class Plugin {
 	use Singleton;
 
 	public function enqueue_cm_scripts() {
+		wp_enqueue_script(
+			'elementor-cm-addons',
+			ELEMENTOR_CM_ADDONS_URL . 'assets/js/core-scripts.js',
+			[],
+			Utils::get_version_file( ELEMENTOR_CM_ADDONS_PATH . 'assets/js/core-scripts.js' ),
+			true
+		);
+
 		wp_localize_script(
-			'cm-form-scripts',
+			'elementor-cm-addons',
 			'cmform',
 			[
 				'url'    => admin_url( 'admin-ajax.php' ),
@@ -26,7 +35,7 @@ class Plugin {
 			'cm-iframe',
 			plugins_url( '/assets/css/cm-iframe.css', __FILE__ ),
 			[],
-			$this->get_version_file( plugin_dir_path( __FILE__ ) . 'assets/css/cm-iframe.css' ),
+			Utils::get_version_file( plugin_dir_path( __FILE__ ) . 'assets/css/cm-iframe.css' ),
 			'all'
 		);
 	}
@@ -43,10 +52,6 @@ class Plugin {
 		// Register Widgets
 		\Elementor\Plugin::instance()->widgets_manager->register_widget_type( new Cm_Form() );
 		\Elementor\Plugin::instance()->widgets_manager->register_widget_type( new Cm_Iframe() );
-	}
-
-	public function get_version_file( string $file ): ?int {
-		return filemtime( $file );
 	}
 
 	public function __construct() {

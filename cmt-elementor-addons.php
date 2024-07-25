@@ -3,9 +3,9 @@
  * Plugin Name: Elementor CM Addons
  * Description: Elementor CM Addons.
  * Plugin URI:  https://elementor.com/
- * Version:     1.3.0
- * Author:      Dane
- * Author URI:  https://elementor.com/
+ * Version:     1.0.0
+ * Author:      Rgbcode
+ * Author URI:  https://rgbcode.com/
  * Text Domain: cmt-elementor-addons
  */
 
@@ -15,13 +15,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
+define( 'ELEMENTOR_CM_ADDONS_URL', plugin_dir_url( __FILE__ ) );
 define( 'ELEMENTOR_CM_ADDONS_PATH', plugin_dir_path( __FILE__ ) );
 
-require_once ELEMENTOR_CM_ADDONS_PATH . 'vendor/autoload.php';
 require_once ELEMENTOR_CM_ADDONS_PATH . 'autoload.php';
 
 final class Elementor_Cm_Addons {
-	const VERSION                   = '1.3.0';
+	const VERSION                   = '1.1.0';
 	const MINIMUM_ELEMENTOR_VERSION = '2.0.0';
 	const MINIMUM_PHP_VERSION       = '7.0';
 

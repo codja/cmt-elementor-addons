@@ -1,583 +1,388 @@
-(function($) {
-    var isAlreadyClicked = false;
-	updateNonce();
-    prepareForm();
+class Hideable {
 
-	$(".cm-form-country").each(function() {
-		CopyPhoneCountryCode( $(this) );
-	});
+	constructor( element ) {
+		this.elem = element;
+	}
 
-    $("body").on("input", ".cm-form input:not([id='phonecountry'])", function() {
-        var fields = [$(this).attr('name')];
-        validateFields(fields, $(this).closest(".cm-form"));
-    });
+	show() {
+		this.elem.classList.remove( 'cm-form-hidden' );
+	}
 
-    $("body").on("change", ".cm-form select, .cm-form input[type='checkbox'], .cm-form input[type='date']", function() {
-        var fields = [$(this).attr('name')];
-        validateFields(fields, $(this).closest(".cm-form"));
-    });
+	hide() {
+		this.elem.classList.add( 'cm-form-hidden' );
+	}
 
-    $("body").on("click", ".cm-form-submit", function(evt) {
-    	evt.preventDefault();
-    	if ( window.countryIso === "US" ) {
-		    return;
-	    }
-		const fields = [];
-		const form = $(this).closest(".cm-form");
-		const message = $(this).closest(".cm-form-message");
-		const messageContainer = $(this).closest(".cm-form-submit-container");
-		const inputs = form.find(".cm-form-input-container:not(.cm-form-submit-container) input, .cm-form-input-container:not(.cm-form-submit-container) select");
-		const vlCidInput = form.find( "input[name='vl-cid']" );
-		const vlCidValue = getCookie( 'vl-cid' );
+}
 
-		vlCidInput.val( vlCidValue );
-		const referralInput = form.find("input[name='referral']");
-		if ( ! referralInput.val() ) {
-			const referralFromCookie = getCookie('referral_params');
-			referralInput.val( referralFromCookie.substr(1).replaceAll('&', '|') );
+class EmailSuggestions {
+
+	constructor( elem ) {
+		this.form = elem;
+		this.email = this.form.querySelector( '.cm-form-email-container' );
+
+		if ( ! this.email ) {
+			return;
 		}
 
-        for( let i = 0; i < inputs.length; i++ ) {
-            fields.push(inputs[i].attributes.name.nodeValue);
-        }
+		this.emailInput = this.email.querySelector( 'input[type=email]' );
+		this.suggestions = this.email.querySelector( '.cm-form-suggestions' );
 
-		const isValid = validateFields(fields, form);
-		isAlreadyClicked = true;
+		if ( ! this.emailInput || ! this.suggestions ) {
+			return;
+		}
 
-        if (isValid) {
-			document.dispatchEvent( new CustomEvent('frm-lp-submit', {
-				detail: {
-					form: evt.target.closest('.cm-form')
+		this.tooltipSuggestions = new Hideable( this.suggestions )
+
+		this.bindEvents();
+	}
+
+	bindEvents() {
+		this.tabHandler();
+		this.suggestionsHandler();
+		this.emailInputHandler();
+	}
+
+	tabHandler() {
+		this.form.addEventListener( 'keyup', ( evt ) => {
+			if ( evt.keyCode === 9 ) {
+				const activeElement = document.activeElement;
+				if ( ! activeElement.parentElement.parentElement.classList.contains( 'cm-form-email' ) ) {
+					this.tooltipSuggestions.hide();
 				}
-			}) );
+			}
+		} );
+	}
 
-            if(form.hasClass("file-download")) {
-                var fileLink = form.find("#file-download-link");
-                if(fileLink.length > 0) fileLink[0].click();
-            }
+	suggestionsHandler() {
+		[...this.suggestions.children].forEach( ( elem ) => {
+			elem.addEventListener( 'click', ( evt ) => {
+				this.emailInput.value = elem.textContent;
+				$( '.cm-form-email' ).trigger( 'input' );
+				this.emailInput.dispatchEvent( new Event( 'input' ) );
+				this.tooltipSuggestions.hide();
+			} );
+		} );
 
-            $(this).addClass('cm-form-submit_loader');
+		document.addEventListener('click', ( evt ) => {
+			const outsideClick = ! this.emailInput.contains( evt.target ) && ! this.suggestions.contains( evt.target );
+			if ( outsideClick ) {
+				this.tooltipSuggestions.hide();
+			}
+		} );
+	}
 
-            fields.forEach(function(field) {
-                var fieldElement = form.find("[name=" + field + "]");
-                value = fieldElement.val();
-                if(field == "email") value = value.toLocaleLowerCase();
-                fieldElement.val(value.trim());
-            });
+	emailInputHandler() {
+		this.emailInput.addEventListener( 'focus', () => {
+			if ( this.emailInput.value.length > 0 ) {
+				this.tooltipSuggestions.show();
+			}
+		} );
 
-	        var data = form.serializeArray().reduce(function(obj, item) {
-		        obj[item.name] = item.value;
-		        return obj;
-	        }, {});
+		this.emailInput.addEventListener( 'input', ( evt ) => {
+			if ( this.emailInput.value.length === 0 ) {
+				this.tooltipSuggestions.hide();
+				return;
+			} else {
+				this.tooltipSuggestions.show();
+			}
 
-	        data.cxd = getParamsFromUrl('cxd') || false;
+			[...this.suggestions.children].forEach( ( elem ) => {
+				const placeholder = elem.querySelector( '.cm-form-suggestions__placeholder' );
+				const value = evt.target.value;
+				! value.includes( '@' )
+					? placeholder.textContent = value
+					: this.handlerEmailDomain( elem, placeholder, value )
+			} );
+		} );
+	}
 
-			//var iframe = form.siblings('.cm-form-thank-you-page'); // temp
-			form.next().show();
+	handlerEmailDomain( elem, placeholder, value ) {
+		if ( ! elem || ! placeholder || ! value ) {
+			return;
+		}
 
-	        postData( '/wp-json/cmform/v1/' + form[0].dataset.route, data )
-		        .then( data => {
+		const splitString = value.split( '@' );
+		const firstPart = splitString[0];
+		const emailDomain = '@' + splitString[ splitString.length - 1 ];
 
-		            if ( data.success ) {
+		placeholder.textContent = firstPart;
 
-						if( false && iframe.length > 0 ) { // temp
+		! elem.textContent.includes( emailDomain )
+			? elem.classList.add( 'cm-form-hidden' )
+			: elem.classList.remove( 'cm-form-hidden' );
+	}
+}
 
-							setTimeout(function () {
-								form.next().hide();
-								$('.cm-form-thank-you-page').css('visibility', 'visible');
-							}, 1000);
+class FormHandlerClass extends elementorModules.frontend.handlers.Base {
 
-							setTimeout(function () {
-								form[0].action.indexOf("mixpanel") < 0
-									? location.href = data.link
-									: handleMixPanelRequest( form );
+	constructor( ...$props ) {
+		super( ...$props );
+	}
 
-								$(this)[0].disabled = true;
-								$(this).removeClass('cm-form-submit_loader');
-							}, 3000);
+	getDefaultSettings() {
+		return {
+			selectors: {
+				form: '.cm-form',
+				formCountry: '.cm-form-country',
+				formSubmit: '.cm-form-submit',
+				formMessage: '.cm-form-message',
+				formSubmitContainer: '.cm-form-submit-container',
+				inputField: 'input',
+				selectField: 'select',
+				phoneCountry: '.cm-form-phone-prefix',
+				checkboxField: 'input[type="checkbox"]',
+				dateField: 'input[type="date"]',
+				vlCidInput: "input[name='vl-cid']",
+				referralInput: "input[name='referral']",
+				thankYouPage: '.cm-form-thank-you-page',
+				fileDownloadLink: '#file-download-link',
+				formInputContainer: '.cm-form-input-container',
+				loaderClass: 'cm-form-submit_loader'
+			},
+		};
+	}
 
-						} else {
-							form[0].action.indexOf("mixpanel") < 0
-								? location.href = data.link
-								: handleMixPanelRequest( form );
+	getDefaultElements() {
+		const selectors = this.getSettings('selectors');
+		return {
+			$form: this.$element.find(selectors.form),
+			$formCountry: this.$element.find(selectors.formCountry),
+			$phoneCountry: this.$element.find(selectors.phoneCountry),
+			$formSubmit: this.$element.find(selectors.formSubmit),
+			$formMessage: this.$element.find(selectors.formMessage),
+			$formSubmitContainer: this.$element.find(selectors.formSubmitContainer),
+			$inputField: this.$element.find(selectors.inputField),
+			$selectField: this.$element.find(selectors.selectField),
+			$checkboxField: this.$element.find(selectors.checkboxField),
+			$dateField: this.$element.find(selectors.dateField),
+			$vlCidInput: this.$element.find(selectors.vlCidInput),
+			$referralInput: this.$element.find(selectors.referralInput),
+			$thankYouPage: this.$element.find(selectors.thankYouPage),
+			$fileDownloadLink: this.$element.find(selectors.fileDownloadLink),
+			$formInputContainer: this.$element.find(selectors.formInputContainer)
+		};
+	}
 
-							$(this)[0].disabled = true;
-						}
+	bindEvents() {
+		new EmailSuggestions( this.elements.$form[0] );
+		this.elements.$formCountry.on('change', this.onFormCountryChange.bind(this));
+		this.elements.$inputField.on('input', this.onInputChange.bind(this));
+		this.elements.$selectField.on('change', this.onInputChange.bind(this));
+		this.elements.$checkboxField.on('change', this.onInputChange.bind(this));
+		this.elements.$dateField.on('change', this.onInputChange.bind(this));
+		this.elements.$formSubmit.on('click', this.onSubmitClick.bind(this));
+	}
 
-		            } else {
-						form.next().hide();
-						const messageText = data.message ? data.message : data.data;
-						! message.length
-							? messageContainer.append('<p class="cm-form-message">' + messageText + '</p>')
-							: message.text( messageText );
+	onFormCountryChange(event) {
+		this.copyPhoneCountryCode(event.target);
+	}
 
-						$(this).removeClass('cm-form-submit_loader');
-		            }
-	            } )
-		        .catch( ( error ) => {
-	                console.error('Error:', error);
-	            } );
-        }
-    })
+	onInputChange(event) {
+		const fields = [event.target.name];
+		this.validateFields(fields, event.target.closest(this.getSettings('selectors').form));
+	}
 
-    $("body").on("change", ".cm-form-country", function() {
-        CopyPhoneCountryCode($(this));
-    });
+	onSubmitClick(event) {
+		event.preventDefault();
+		const selectors = this.getSettings('selectors');
+		const form = this.elements.$form[0];
+		const inputs = form.querySelectorAll(`${selectors.formInputContainer}:not(${selectors.formSubmitContainer}) input, ${selectors.formInputContainer}:not(${selectors.formSubmitContainer}) select`);
+		const vlCidInput = this.elements.$vlCidInput[0];
+		const vlCidValue = this.getCookie('vl-cid');
+		const referralInput = this.elements.$referralInput[0];
 
-    function validateFields(fields, form) {
-        var SendOK = true;
+		vlCidInput.value = vlCidValue;
+		if (!referralInput.value) {
+			const referralFromCookie = this.getCookie('referral_params');
+			referralInput.value = referralFromCookie.substr(1).replaceAll('&', '|');
+		}
 
-	    function isMinorUser( maxDateString, minDateString, value ) {
-	    	var minDate = new Date( minDateString ).getTime();
-	    	var maxDate = new Date( maxDateString ).getTime();
-	    	var selectedDate = new Date( value ).getTime();
-		    return selectedDate <= maxDate && selectedDate > minDate;
-	    }
+		const fields = Array.from(inputs).map(input => input.name);
+		const isValid = this.validateFields(fields, form);
+		if (isValid) {
+			document.dispatchEvent(new CustomEvent('frm-lp-submit', {detail: {form: form}}));
 
-	    for (var i = 0; i < fields.length; i++) {
-            var field = fields[i];
-            form.find("#" + field + "-error").hide();
-            form.find("#phone-digits-error").hide();
-            form.find("[name=" + field + "]").removeClass("error").removeClass("valid");
-            var value = form.find("[name=" + field + "]") ? form.find("[name=" + field + "]").val() : "";
+			if (form.classList.contains("file-download")) {
+				const fileLink = this.elements.$fileDownloadLink.get(0);
+				if (fileLink) fileLink.click();
+			}
 
-            switch (field) {
-                case 'firstname':
-                    //if (value == "" || value.match(/^[a-zA-Z|\u0600-\u06FF][a-zA-Z|\u0600-\u06FF\s?]{2,40}$/) == null)  { //'' or null  \u0600-\u06FF
-                    if (value == "" || value.match(/^([\w\u0621-\u064A\u0660-\u0669]+\s?)*\s*$/) == null || value.length > 40 || value.length < 3 || value.match(/\d/) !== null)  { //'' or null  \u0600-\u06FF
-                        form.find("#firstname-error").show();
-                        form.find("#firstname").addClass("error");
-                        SendOK = false;
-                    }
-                    else {
-                        form.find("#firstname").addClass("valid");
-                    }
-                    break;
-                case 'lastname':
-                    if (value == "" || value.match(/^([\w\u0621-\u064A\u0660-\u0669]+\s?)*\s*$/) == null || value.length > 40 || value.length < 3 || value.match(/\d/) !== null) {
-                        form.find("#lastname-error").show();
-                        form.find("#lastname").addClass("error");
-                        SendOK = false;
-                    }
-                    else {
-                        form.find("#lastname").addClass("valid");
-                    }
-                    break;
-                case 'email':
-                    value = value.toLocaleLowerCase();
-                    //if (value == "" || value.match(/^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,}(?:\.[a-z]{2})?)$/i) == null) {
-                    if (value == "" || value.match(/^([a-z0-9\-\_]+(?:\.[a-z0-9\-\_]+)*)@((?:[a-z0-9\-\_]+\.)*[a-z0-9\-\_]{0,66})\.([a-z]{2,}(?:\.[a-z]{2})?)$/) == null) {
-                        form.find("#email-error").show();
-                        form.find("#email").addClass("error");
-                        SendOK = false;
-                    }
-                    else {
-                        form.find("#email").addClass("valid");
-                    }
-                    break;
-                case 'phone':
-                    if (value == "") {
-                        SendOK = false;
-                        form.find("#phone-error").show();
-                        form.find("#phone").addClass("error");
-                    }
-                    else if(value.match(form.hasClass("arabic") ? '^[0-9]{6,12}$' : '^[0-9]{6,10}$') == null) {
-                        SendOK = false;
-                        form.find("#phone-digits-error").show();
-                        form.find("#phone").addClass("error");
-                    }
-                    else form.find("#phone").addClass("valid");
-                    break;
-                case 'phonecountry':
-                    if (value.match('^[0-9]{1,4}$') == null || value == "") {
-                        SendOK = false;
-                        form.find("#phonecountry-error").show();
-                    }
-                    if (value == '+') {
-                        SendOK = false;
-                        form.find("#countryiso2-error").show();
-                        form.find("#countryiso2").addClass("error");
-                    }
-                    break;
-                case 'countryiso2':
-                    if(value == "" || !value) {
-                        SendOK = false;
-                        form.find("#countryiso2-error").show();
-                        form.find("#phonecountry-error").show();
-                        form.find("#countryiso2").addClass("error");
-                    }
-                    else form.find("#countryiso2").addClass("valid");
-                    break;
-	            case 'password':
-					if (value == "" || value.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,12}$/) == null ) {
-			            form.find("#password-error").show();
-			            form.find("#password").addClass("error");
-			            SendOK = false;
-		            }
-		            else {
-			            form.find("#password").addClass("valid");
-		            }
-		            break;
-	            case 'birthday':
-	            	var maxValue = form.find( "[name=birthday]" ).attr( 'max' );
-	            	var minValue = form.find( "[name=birthday]" ).attr( 'min' );
-					if ( value !== "" && ! isMinorUser( maxValue, minValue, value ) ) {
-			            SendOK = false;
-			            form.find ("#birthday-error" ).show();
-			            form.find( "[name=birthday]" ).addClass( "error" );
-		            }
-		            else form.find( "[name=birthday]" ).addClass( "valid" );
-		            break;
+			event.target.classList.add(selectors.loaderClass);
+
+			fields.forEach((field) => {
+				const fieldElement = form.querySelector(`[name=${field}]`);
+				let value = fieldElement.value;
+				if (field==="email") value = value.toLowerCase();
+				fieldElement.value = value.trim();
+			});
+
+			const data = Array.from(new FormData(form)).reduce((obj, [key, value]) => {
+				obj[key] = value;
+				return obj;
+			}, {});
+
+			data.cxd = this.getParamsFromUrl('cxd') || false;
+
+			form.nextElementSibling.style.display = 'block';
+
+			this.postData(`/wp-json/cmform/v1/${form.dataset.route}`, data)
+				.then(data => this.handleResponse(data, form, event.target))
+				.catch(error => console.error('Error:', error));
+		}
+	}
+
+	handleResponse(data, form, submitButton) {
+		if (data.success) {
+			location.href = data.link
+			submitButton.disabled = true;
+		} else {
+			form.nextElementSibling.style.display = 'none';
+			const messageText = data.message || data.data;
+			const message = this.elements.$formMessage.get(0);
+
+			if (!message) {
+				this.elements.$formSubmitContainer.append(`<p class="cm-form-message">${messageText}</p>`);
+			} else {
+				message.textContent = messageText;
+			}
+
+			submitButton.classList.remove(this.getSettings('selectors').loaderClass);
+		}
+	}
+
+	validateFields(fields, form) {
+		let SendOK = true;
+
+		fields.forEach((field) => {
+			const fieldElement = form.querySelector(`[name=${field}]`);
+			if (!fieldElement) return;
+
+			fieldElement.classList.remove("error", "valid");
+			let value = fieldElement.value;
+
+			const errorBlock = form.querySelector(`#${field}-error`);
+			if (errorBlock) {
+				errorBlock.style.display = 'none';
+			}
+			form.querySelector("#phone-digits-error").style.display = 'none';
+
+			switch (field) {
+				case 'firstname':
+				case 'lastname':
+					if (!/^[\w\u0621-\u064A\u0660-\u0669]+(\s?[\w\u0621-\u064A\u0660-\u0669]+)*$/.test(value) || value.length < 3 || value.length > 40 || /\d/.test(value)) {
+						form.querySelector(`#${field}-error`).style.display = 'block';
+						fieldElement.classList.add("error");
+						SendOK = false;
+					} else {
+						fieldElement.classList.add("valid");
+					}
+					break;
+				case 'email':
+					if (!/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(value.toLowerCase())) {
+						form.querySelector("#email-error").style.display = 'block';
+						fieldElement.classList.add("error");
+						SendOK = false;
+					} else {
+						fieldElement.classList.add("valid");
+					}
+					break;
+				case 'phone':
+					if (!/^\d{6,12}$/.test(value)) {
+						form.querySelector("#phone-digits-error").style.display = 'block';
+						fieldElement.classList.add("error");
+						SendOK = false;
+					} else {
+						fieldElement.classList.add("valid");
+					}
+					break;
+				case 'countryiso2':
+					if (value==="") {
+						form.querySelector("#countryiso2-error").style.display = 'block';
+						fieldElement.classList.add("error");
+						SendOK = false;
+					} else {
+						fieldElement.classList.add("valid");
+					}
+					break;
+				case 'password':
+					if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,12}$/.test(value)) {
+						form.querySelector("#password-error").style.display = 'block';
+						fieldElement.classList.add("error");
+						SendOK = false;
+					} else {
+						fieldElement.classList.add("valid");
+					}
+					break;
+				case 'birthday':
+					const maxValue = form.querySelector("[name=birthday]").getAttribute('max');
+					const minValue = form.querySelector("[name=birthday]").getAttribute('min');
+					if (value!=="" && !this.isMinorUser(maxValue, minValue, value)) {
+						form.querySelector("#birthday-error").style.display = 'block';
+						fieldElement.classList.add("error");
+						SendOK = false;
+					} else {
+						fieldElement.classList.add("valid");
+					}
+					break;
 				case 'promocode':
-					if ( value.length > 0 && value.length > 32 ) {
-						form.find("#promocode-error").show();
-						form.find("#promocode").addClass("error");
+					if (value.length > 0 && value.length > 32) {
+						form.querySelector("#promocode-error").style.display = 'block';
+						fieldElement.classList.add("error");
 						SendOK = false;
 					}
 					break;
-                case 'agree':
-                    if( form.find( "#agree" ).is( ":checked" ) === false ) {
-                        SendOK = false;
-                        form.find( "#agree-error" ).show();
-                        form.find( "#agree" ).addClass( "error" );
-                    }
-                    break;
-
-                default:
-            }
-        }
-
-        return SendOK;
-    }
-
-    function CopyPhoneCountryCode(selectCountry) {
-        var phoneCountryInput = selectCountry.closest("form")[0].querySelector(".cm-form-phone-container input[name='phonecountry']");
-        selectCountry = selectCountry[0];
-        if (phoneCountryInput) {
-            phoneCountryInput.value = selectCountry.options[selectCountry.selectedIndex].dataset.telephonecode;
-        }
-    }
-
-    function prepareForm() {
-	    $(".cm-form input[name='landingPageUrl']").each(function() {
-		    $(this).val( window.location.hostname + window.location.pathname );
-	    });
-
-        writeCookies();
-    }
-
-    function handleMixPanelRequest(form) {
-        var data = {
-            "token": "74d816453fe3cbb99afb2fe67927af30",
-            "$distinct_id": generateUUID(),
-            "$set": serializeFormData(form.serializeArray(), form[0].classList.contains("popup-form")),
-        };
-
-        httpGetData("https://api.mixpanel.com/engage/?data=" + encodeURI(JSON.stringify(data)), function(response) {
-            if(response == 1) {
-                var redirectInput = form.find("input[name='redirectToPage']");
-                window.location.href = redirectInput.length > 0 && redirectInput.val() != "" ? (redirectInput.val() + "?firstname=" + data["$set"]["$first_name"]) : ("https://cm-ib.ibcommissions.com/register/?firstname=" + data["$set"]["$first_name"]) ;
-            }
-        });
-    }
-
-    function generateUUID() {
-        var d = new Date().getTime();
-        var d2 = (performance && performance.now && (performance.now()*1000)) || 0;
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            var r = Math.random() * 16;
-            if(d > 0){
-                r = (d + r)%16 | 0;
-                d = Math.floor(d/16);
-            } else {
-                r = (d2 + r)%16 | 0;
-                d2 = Math.floor(d2/16);
-            }
-            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-        });
-    }
-
-    function serializeFormData(formDataObjectArray, is_popup) {
-        var acceptedObjectKeysArray = ["firstname", "lastname", "email", "phone", "country"];
-        var acceptedObjectValuesArray = ["$first_name", "$last_name", "$email", "$phone", "$country_code"];
-        var formData = {}
-
-        for(var i = 0; i < formDataObjectArray.length; i++) {
-            var index = acceptedObjectKeysArray.indexOf(formDataObjectArray[i]["name"])
-            if(index > -1) formData[acceptedObjectValuesArray[index]] = formDataObjectArray[i]["value"];
-        }
-
-        formData["$lp_link"] = window.location.href + (is_popup ? "?popup" : "");
-
-        return formData;
-    }
-
-    function writeCookies() {
-		const nUrlParams = new URLSearchParams(location.search);
-
-		let gclid = "";
-
-		const possibleClientIdParams = ['gclid', 'tblci', 'fbclid', 'vmcid'];
-		for (let i = 0; i < possibleClientIdParams.length; i++) {
-			const paramValue = nUrlParams.get(possibleClientIdParams[i]);
-			if (paramValue !== null) {
-				gclid = paramValue;
-				// nUrlParams.delete(possibleClientIdParams[i]);
-				break;
+				default:
+					break;
 			}
-		}
-		nUrlParams.set('gclid', gclid);
+		});
 
-		function setParam(utmName, paramName) {
-			if (nUrlParams.has(utmName)) {
-				nUrlParams.set(paramName, nUrlParams.get(utmName));
-			}
-
-		}
-
-		function setCookies(utmName, cookiesFieldName, cookiesObject ) {
-			if (nUrlParams.has(utmName)) {
-				cookiesObject[cookiesFieldName] = nUrlParams.get(utmName);
-			}
-			return cookiesObject;
-		}
-
-		const cookiesObject = {};
-		setCookies('utm_campaignid', 'A', cookiesObject);
-		setCookies('utm_campaign', 'SubAffiliate', cookiesObject);
-		setCookies('utm_campaignid', 'Vvar1', cookiesObject);
-		setCookies('utm_content', 'Vvar2', cookiesObject);
-		setCookies('utm_device','Vvar4', cookiesObject);
-		setCookies('utm_term','Vvar6' , cookiesObject);
-		setCookies('utm_placement','Vvar7', cookiesObject );
-		setCookies('utm_adgroupid', 'Vvar8', cookiesObject);
-		cookiesObject['gclid'] = gclid;
-
-		document.cookie = 'MARKETING_CONTACT_TRACKING=' + JSON.stringify(cookiesObject);
-
-		setParam('utm_campaignid', 'A');
-		setParam('utm_campaign', 'subaffiliate');
-		setParam('utm_campaignid', 'vvar1');
-		setParam('utm_content', 'vvar2');
-		setParam('utm_device','vvar4');
-		setParam('utm_term','vvar6' );
-		setParam('utm_placement','vvar7' );
-		setParam('utm_adgroupid', 'vvar8');
-
-    }
-
-    function getParamsFromUrl( param ) {
-	    var url = new URL(location.href);
-	    var params = new URLSearchParams(url.search);
-
-	    return params.get( param );
+		return SendOK;
 	}
 
-	function getCookie(name) {
+	copyPhoneCountryCode(element) {
+		const phoneCountry = this.elements.$phoneCountry[0];
+		if (element && phoneCountry) {
+			phoneCountry.value = element.options[element.selectedIndex].dataset.telephonecode;
+		}
+	}
+
+	isMinorUser(maxDateString, minDateString, value) {
+		const minDate = new Date(minDateString).getTime();
+		const maxDate = new Date(maxDateString).getTime();
+		const selectedDate = new Date(value).getTime();
+
+		return selectedDate <= maxDate && selectedDate > minDate;
+	}
+
+	getCookie(name) {
 		let matches = document.cookie.match(new RegExp(
 			"(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
 		));
+
 		return matches ? decodeURIComponent(matches[1]) : '';
 	}
 
-    function httpGetData(url, callback) {
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = function() {
-            if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-                callback(xmlHttp.responseText);
-        }
-        xmlHttp.open("GET", url, true); // true for asynchronous
-        xmlHttp.send(null);
-    }
+	getParamsFromUrl(param) {
+		// Create a URL object from the current location
+		const url = new URL(window.location.href);
 
-	async function postData( url = '', data = {} ) {
-		const response = await fetch( url, {
-			headers: {
-				'Accept': 'application/json',
-				'Content-Type': 'application/json',
-				'X-WP-Nonce': cmform._nonce,
-			},
-			cache: 'no-store',
-			credentials: 'include',
-			method: 'POST',
-			body: JSON.stringify( data )
+		// Create a URLSearchParams object from the URL's search parameters
+		const params = new URLSearchParams(url.search);
+
+		// Retrieve and return the value of the specified parameter
+		return params.get(param);
+	}
+}
+
+jQuery( window ).on( 'elementor/frontend/init', () => {
+	const addHandler = ( $element ) => {
+		elementorFrontend.elementsHandler.addHandler( FormHandlerClass, {
+			$element,
 		} );
-		return response.json();
-	}
+	};
 
-	// Popup form
-	if ( document.querySelector( '.popup-form' ) ) {
-
-		const html = document.querySelector( 'html' ),
-			btnsCallModals = document.querySelectorAll( '.js-cmtrading-popup' ),
-			modal = document.querySelector( '.cm-form-container_popup' ),
-			closeModal = modal.querySelector( '.js-cmtrading-close-popup' );
-
-		const showModal = ( evt ) => {
-			evt.preventDefault();
-			html.style.overflow = 'hidden';
-			modal.classList.add( 'cm-popup-active' );
-		};
-
-		const hideModal = () => {
-			html.style.overflow = '';
-			modal.classList.remove( 'cm-popup-active' );
-		};
-
-		btnsCallModals.forEach( ( elem ) => {
-			elem.addEventListener( 'click', showModal );
-		} );
-
-		closeModal.addEventListener( 'click', hideModal );
-
-	}
-
-	class Hideable {
-
-		constructor( element ) {
-			this.elem = element;
-		}
-
-		show() {
-			this.elem.classList.remove( 'cm-form-hidden' );
-		}
-
-		hide() {
-			this.elem.classList.add( 'cm-form-hidden' );
-		}
-
-	}
-
-	class EmailSuggestions {
-
-		constructor( elem ) {
-			this.form = elem;
-			this.email = this.form.querySelector( '.cm-form-email-container' );
-
-			if ( ! this.email ) {
-				return;
-			}
-
-			this.emailInput = this.email.querySelector( 'input[type=email]' );
-			this.suggestions = this.email.querySelector( '.cm-form-suggestions' );
-
-			if ( ! this.emailInput || ! this.suggestions ) {
-				return;
-			}
-
-			this.tooltipSuggestions = new Hideable( this.suggestions )
-
-			this.bindEvents();
-		}
-
-		bindEvents() {
-			this.tabHandler();
-			this.suggestionsHandler();
-			this.emailInputHandler();
-		}
-
-		tabHandler() {
-			this.form.addEventListener( 'keyup', ( evt ) => {
-				if ( evt.keyCode === 9 ) {
-					const activeElement = document.activeElement;
-					if ( ! activeElement.parentElement.parentElement.classList.contains( 'cm-form-email' ) ) {
-						this.tooltipSuggestions.hide();
-					}
-				}
-			} );
-		}
-
-		suggestionsHandler() {
-			[...this.suggestions.children].forEach( ( elem ) => {
-				elem.addEventListener( 'click', ( evt ) => {
-					this.emailInput.value = elem.textContent;
-					$( '.cm-form-email' ).trigger( 'input' );
-					this.emailInput.dispatchEvent( new Event( 'input' ) );
-					this.tooltipSuggestions.hide();
-				} );
-			} );
-
-			document.addEventListener('click', ( evt ) => {
-				const outsideClick = ! this.emailInput.contains( evt.target ) && ! this.suggestions.contains( evt.target );
-				if ( outsideClick ) {
-					this.tooltipSuggestions.hide();
-				}
-			} );
-		}
-
-		emailInputHandler() {
-			this.emailInput.addEventListener( 'focus', () => {
-				if ( this.emailInput.value.length > 0 ) {
-					this.tooltipSuggestions.show();
-				}
-			} );
-
-			this.emailInput.addEventListener( 'input', ( evt ) => {
-				if ( this.emailInput.value.length === 0 ) {
-					this.tooltipSuggestions.hide();
-					return;
-				} else {
-					this.tooltipSuggestions.show();
-				}
-
-				[...this.suggestions.children].forEach( ( elem ) => {
-					const placeholder = elem.querySelector( '.cm-form-suggestions__placeholder' );
-					const value = evt.target.value;
-					! value.includes( '@' )
-						? placeholder.textContent = value
-						: this.handlerEmailDomain( elem, placeholder, value )
-				} );
-			} );
-		}
-
-		handlerEmailDomain( elem, placeholder, value ) {
-			if ( ! elem || ! placeholder || ! value ) {
-				return;
-			}
-
-			const splitString = value.split( '@' );
-			const firstPart = splitString[0];
-			const emailDomain = '@' + splitString[ splitString.length - 1 ];
-
-			placeholder.textContent = firstPart;
-
-			! elem.textContent.includes( emailDomain )
-				? elem.classList.add( 'cm-form-hidden' )
-				: elem.classList.remove( 'cm-form-hidden' );
-		}
-	}
-
-	const signupForms = document.querySelectorAll( '.cm-form' );
-	signupForms.forEach( form => {
-		new EmailSuggestions( form );
-	} );
-
-	async function getRefreshedNonce() {
-		try {
-			let response = await fetch( cmform.url, {
-				method: 'POST',
-				headers: new Headers( {
-					'Content-Type': 'application/x-www-form-urlencoded',
-				} ),
-				body: new URLSearchParams({
-					action: 'cm_get_refreshed_nonce',
-				} ).toString(),
-				credentials: 'same-origin',
-			} );
-
-			response = await response.json();
-
-			return response?.data?._nonce ?? '';
-		} catch( e ) {
-			return '';
-		}
-	}
-
-	async function updateNonce() {
-		const updatedNonce = await getRefreshedNonce();
-		if ( updatedNonce ) {
-			cmform._nonce = updatedNonce;
-		}
-
-	}
-})(jQuery);
+	elementorFrontend.hooks.addAction(
+		'frontend/element_ready/cm-form.default',
+		addHandler
+	);
+} );
