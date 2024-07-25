@@ -13,8 +13,7 @@ class Panda_DB {
 			return null;
 		}
 
-		$panda_db = self::instance()->db();
-
+		$panda_db = $this->db();
 		if ( ! $panda_db ) {
 			return null;
 		}

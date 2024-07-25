@@ -2,7 +2,7 @@
 
 namespace ElementorCmAddons\classes\routes\api\clients;
 
-use ElementorCmAddons\classes\Geo_Location;
+use ElementorCmAddons\classes\helpers\Location;
 use ElementorCmAddons\classes\routes\api\handlers\Form_Redirect_Link;
 use ElementorCmAddons\classes\routes\api\handlers\Request_Api;
 use ElementorCmAddons\interfaces\api\Authenticatable;
@@ -53,7 +53,7 @@ class Panda extends Client implements Authenticatable {
 			'lastName'  => sanitize_text_field( $data['lastname'] ?? '' ),
 			'phone'     => sanitize_text_field( ( $data['phonecountry'] ?? '' ) . ( $data['phone'] ?? '' ) ),
 			'language'  => $this->get_site_language( sanitize_text_field( $data['language'] ?? '' ) ),
-			'ip'        => Geo_Location::instance()->get_ip_address(),
+			'ip'        => Location::get_client_ip(),
 		];
 
 		$promocode = $data['promocode'] ?? '';

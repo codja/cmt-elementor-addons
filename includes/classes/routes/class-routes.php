@@ -2,6 +2,7 @@
 
 namespace ElementorCmAddons\classes\routes;
 
+use ElementorCmAddons\classes\routes\api\Register_Antelope;
 use ElementorCmAddons\classes\routes\api\Register_Panda;
 use ElementorCmAddons\classes\routes\api\Register_Partners;
 
@@ -31,6 +32,20 @@ class Routes {
 					array(
 						'methods'  => 'POST',
 						'callback' => [ new Register_Panda(), 'post' ],
+					)
+				);
+			}
+		);
+
+		add_action(
+			'rest_api_init',
+			function () {
+				register_rest_route(
+					'cmform/v1',
+					'/register_antelope',
+					array(
+						'methods'  => 'POST',
+						'callback' => [ new Register_Antelope(), 'post' ],
 					)
 				);
 			}

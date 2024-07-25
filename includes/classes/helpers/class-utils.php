@@ -1,6 +1,6 @@
 <?php
 
-namespace ElementorCmAddons\classes;
+namespace ElementorCmAddons\includes\classes\helpers;
 
 abstract class Utils {
 

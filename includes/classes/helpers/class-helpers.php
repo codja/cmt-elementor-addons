@@ -1,7 +1,8 @@
 <?php
 
-namespace ElementorCmAddons\classes;
+namespace ElementorCmAddons\includes\classes\helpers;
 
+use ElementorCmAddons\classes\helpers\Location;
 use ElementorCmAddons\traits\Singleton;
 
 class Helpers {
@@ -9,14 +10,8 @@ class Helpers {
 	use Singleton;
 
 	public function get_country_options( $settings ): string {
-		$country_array = $this->get_country_array();
-		$geo_location  = new Geo_Location();
-
-		try {
-			$current_country = $geo_location->get_location();
-		} catch ( \Exception $e ) {
-			$current_country = false;
-		}
+		$country_array   = $this->get_country_array();
+		$current_country = Location::get_country_iso();
 
 		$valid  = $current_country ? 'valid' : '';
 		$output = "<div class='cm-form-input-container cm-form-country-container'>
@@ -37,7 +32,7 @@ class Helpers {
 		return $output;
 	}
 
-	public function lang_settings( $settings, $lang ) {
+	public function lang_settings( $settings, $lang ): array {
 		switch ( $lang ) {
 			case 'ar-SA':
 				$langValues = $this->ar_lang_settings();
@@ -76,7 +71,7 @@ class Helpers {
 		];
 	}
 
-	private function en_lang_settings() {
+	private function en_lang_settings(): array {
 		return [
 			'firstname_placeholder' => 'First Name',
 			'firstname_error' => 'Please Enter Valid First Name',
@@ -102,7 +97,7 @@ class Helpers {
 		];
 	}
 
-	private function es_lang_settings() {
+	private function es_lang_settings(): array {
 		return [
 			'firstname_placeholder' 	=> 'Nombre',
 			'firstname_error'    		=> 'Introduzca un nombre válido, por favor',
