@@ -1,8 +1,7 @@
 <?php
 
-namespace ElementorCmAddons\includes\classes\helpers;
+namespace ElementorCmAddons\classes\helpers;
 
-use ElementorCmAddons\classes\helpers\Location;
 use ElementorCmAddons\traits\Singleton;
 
 class Helpers {

@@ -4,7 +4,7 @@ namespace ElementorCmAddons;
 
 use ElementorCmAddons\classes\widgets\Cm_Form;
 use ElementorCmAddons\classes\widgets\Cm_Iframe;
-use ElementorCmAddons\includes\classes\helpers\Utils;
+use ElementorCmAddons\classes\helpers\Utils;
 use ElementorCmAddons\traits\Singleton;
 
 class Plugin {

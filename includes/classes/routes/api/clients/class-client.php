@@ -22,15 +22,7 @@ abstract class Client {
 		}
 
 		$data     = $request->get_params();
-		$response = Request_Api::send_api(
-			$this->get_url_for_request(),
-			$this->get_body( $data ),
-			true,
-			'POST',
-			$this->get_headers(),
-			$response_json
-		);
-
+		$response = $this->send_request( $data, $response_json );
 		if ( ! $response ) {
 			wp_send_json_error( __( 'Error on client server. Check Request_Api log', 'cmt-elementor-addons' ) );
 		}
@@ -39,6 +31,21 @@ abstract class Client {
 			'response' => $response,
 			'data'     => $data,
 		];
+	}
+
+	protected function send_request( $data, $response_json = false ) {
+		if ( ! $data ) {
+			return null;
+		}
+
+		return Request_Api::send_api(
+			$this->get_url_for_request(),
+			$this->get_body( $data ),
+			true,
+			'POST',
+			$this->get_headers(),
+			$response_json
+		);
 	}
 
 	protected function get_site_language( $language ): ?string {
@@ -55,7 +62,7 @@ abstract class Client {
 		return $convert[ $language ] ?? 'enu';
 	}
 
-	private function get_url_for_request(): string {
+	protected function get_url_for_request(): string {
 		return esc_url_raw( static::BASE_URL_API . static::API_ENDPOINT );
 	}
 

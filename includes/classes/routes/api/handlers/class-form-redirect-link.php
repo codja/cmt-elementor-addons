@@ -47,6 +47,9 @@ abstract class Form_Redirect_Link {
 				$result = self::strip_param_from_url( $data_from_api['loginToken'] ?? '', 'action' );
 				$result = str_replace( 'www.cmtrading.com', 'es.cmtrading.com', $result );
 				break;
+			case 'CRM':
+				$result = $data_from_api['result']['brokerLoginUrl'] ?? $default;
+				break;
 			default:
 				$result = $default;
 				break;

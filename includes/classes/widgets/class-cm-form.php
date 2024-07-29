@@ -5,8 +5,8 @@ namespace ElementorCmAddons\classes\widgets;
 use Elementor\Controls_Manager;
 use Elementor\Core\Schemes\Color;
 use Elementor\Widget_Base;
-use ElementorCmAddons\includes\classes\helpers\Helpers;
-use ElementorCmAddons\includes\classes\helpers\Utils;
+use ElementorCmAddons\classes\helpers\Helpers;
+use ElementorCmAddons\classes\helpers\Utils;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -1218,7 +1218,23 @@ class Cm_Form extends Widget_Base {
 							<p id="phone-digits-error" class="cm-form-error"
 							   style="color: <?php echo esc_attr( $settings['error_color'] ); ?>; font-family: <?php echo esc_attr( $settings['font_family'] ); ?>;"><?php echo esc_html( $settings['phone_digits_error'] ); ?></p>
 						</div>
-					<?php endif; ?>
+					<?php endif;
+
+					$type_password_input = $settings['show_password'] ? 'password' : 'hidden';
+					$password_value      = $settings['password_autogenerate'] || ! $settings['show_password'] ? Helpers::instance()->random_password() : '';
+					?>
+					<div class='cm-form-input-container cm-form-password-container'>
+						<input
+							id='password'
+							style='font-family: <?php echo esc_attr( $settings['font_family'] ); ?>;'
+							type='<?php echo esc_attr( $type_password_input ); ?>'
+							name='password'
+							class='cm-form-password'
+							placeholder='<?php echo esc_attr( $settings['password_placeholder'] ); ?>'
+							value='<?php echo esc_attr( $password_value ); ?>'
+						/>
+						<p id='password-error' class='cm-form-error' style='color: <?php echo esc_attr( $settings['error_color'] ); ?>; font-family: <?php echo esc_attr( $settings['font_family'] ); ?>;'><?php echo esc_html( $settings['password_error'] ); ?></p>
+					</div>
 
 					<?php if ( $settings['show_birthday'] ) : ?>
 						<div class='cm-form-input-container cm-form-birthday-container'>

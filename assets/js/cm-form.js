@@ -203,7 +203,7 @@ class FormHandlerClass extends elementorModules.frontend.handlers.Base {
 			document.dispatchEvent(new CustomEvent('frm-lp-submit', {detail: {form: form}}));
 
 			if (form.classList.contains("file-download")) {
-				const fileLink = this.elements.$fileDownloadLink.get(0);
+				const fileLink = this.elements.$fileDownloadLink[0];
 				if (fileLink) fileLink.click();
 			}
 
@@ -223,7 +223,7 @@ class FormHandlerClass extends elementorModules.frontend.handlers.Base {
 
 			data.cxd = this.getParamsFromUrl('cxd') || false;
 
-			form.nextElementSibling.style.display = 'block';
+			// form.nextElementSibling.style.display = 'block';
 
 			this.postData(`/wp-json/cmform/v1/${form.dataset.route}`, data)
 				.then(data => this.handleResponse(data, form, event.target))
@@ -236,14 +236,16 @@ class FormHandlerClass extends elementorModules.frontend.handlers.Base {
 			location.href = data.link
 			submitButton.disabled = true;
 		} else {
-			form.nextElementSibling.style.display = 'none';
+			// form.nextElementSibling.style.display = 'none';
 			const messageText = data.message || data.data;
-			const message = this.elements.$formMessage.get(0);
+			const message = this.$element.find(this.getSettings('selectors').formMessage);
+			console.log(message[0]);
 
-			if (!message) {
+
+			if (!message.length) {
 				this.elements.$formSubmitContainer.append(`<p class="cm-form-message">${messageText}</p>`);
 			} else {
-				message.textContent = messageText;
+				message[0].textContent = messageText;
 			}
 
 			submitButton.classList.remove(this.getSettings('selectors').loaderClass);
@@ -371,6 +373,23 @@ class FormHandlerClass extends elementorModules.frontend.handlers.Base {
 
 		// Retrieve and return the value of the specified parameter
 		return params.get(param);
+	}
+
+	async postData(url, data) {
+
+		const response = await fetch( url, {
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json',
+				'X-WP-Nonce': cmform._nonce,
+			},
+			cache: 'no-store',
+			credentials: 'include',
+			method: 'POST',
+			body: JSON.stringify( data )
+		} );
+
+		return response.json();
 	}
 }
 
