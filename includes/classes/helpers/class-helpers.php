@@ -66,7 +66,7 @@ class Helpers {
 			'phone_error'        => 'هذه الخانة مطلوبه',
 			'phone_digits_error' => 'الرجاء1دخال رقم هاتف من 6-12 ارقام',
 			'agree_error'        => 'الرجاء الموافقة على الشروط والأحكام',
-			'employment_error'   => 'empleyment_error_ar',
+			'employment_error'   => '',
 		];
 	}
 
@@ -92,7 +92,7 @@ class Helpers {
 			'birthday_error' => 'You must be over 18 years to open a trading account',
 			'promocode_placeholder' => 'Promocode',
 			'promocode_error' => 'The promo code cannot contain more than 32 characters',
-			'terms_text' => 'By checking this box I accept the <a href="#footer-anc">IB Partnership Agreement (T&amp;Cs)</a> and <a href="#footer-anc">Risk Disclosure Notice</a> and confirm that I am over 18 years of age.',
+			'terms_text' => '',
 		];
 	}
 
@@ -118,7 +118,7 @@ class Helpers {
 			'birthday_error' 			=> 'Debe tener más de 18 años para abrir una cuenta commercial',
 			'promocode_placeholder' 	=> 'Código promocional',
 			'promocode_error' 			=> 'El código promocional no puede contener más de 32 caracteres',
-			'terms_text' 				=> 'Al marcar esta casilla, acepto los Términos y condiciones y confirmo que soy mayor de 18 años. Aviso de Divulgación de Riesgo',
+			'terms_text' 				=> '',
 		];
 	}
 

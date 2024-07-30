@@ -1260,12 +1260,30 @@ class Cm_Form extends Widget_Base {
 						</button>
 					</div>
 
-					<?php if ( $settings['show_security_notice'] ) : ?>
-						<div class="cm-form-security-container">
-							<img class="cm-form-security-img"
-							     src="<?php echo esc_attr( $settings['security_image']['url'] ); ?>"
-							     alt="<?php echo esc_attr( $settings['security_image_alt'] ); ?>"/>
-							<p class="cm-form-security-text"><?php echo esc_html( $settings['security_notice'] ); ?></p>
+					<?php if ( $settings['show_terms'] ) : ?>
+						<div class='cm-form-input-container cm-form-terms-container'>
+							<input id='agree' style='font-family: <?php echo esc_attr( $settings['font_family'] ); ?>;' type='checkbox' checked class='cm-form-agree' name='agree' />
+							<div id='cm-form-terms-inner-container'>
+
+								<?php if ( ! empty( $settings['terms_links'] ) ) : ?>
+								<span style='color: <?php echo esc_attr( $settings['terms_color'] ); ?>; font-family: <?php echo esc_attr( $settings['font_family'] ); ?>;' class='cm-form-terms-text'>
+									<?php echo wp_kses_post( $settings['terms_links'] ); ?>
+								</span>
+								<?php endif; ?>
+
+								<?php if ( ! empty( $settings['agree_error'] ) ) : ?>
+								<p id='agree-error' class='cm-form-error' style='color: <?php echo esc_attr( $settings['error_color'] ); ?>; <?php echo esc_attr( $settings['font_family'] ); ?>;'>
+									<?php echo esc_html( $settings['agree_error'] ); ?>
+								</p>
+								<?php endif; ?>
+
+								<?php if ( ! empty( $settings['terms_text'] ) ) : ?>
+								<span style='color: <?php echo esc_attr( $settings['terms_color'] ); ?>; font-family: <?php echo esc_attr( $settings['font_family'] ); ?>;' class='cm-form-terms-text'>
+									<?php echo wp_kses_post( $settings['terms_text'] ); ?>
+								</span>
+								<?php endif; ?>
+
+							</div>
 						</div>
 					<?php endif; ?>
 
