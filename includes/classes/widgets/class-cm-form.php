@@ -67,7 +67,7 @@ class Cm_Form extends Widget_Base {
 			array(
 				'label'   => __( 'Form Action', 'cmt-elementor-addons' ),
 				'type'    => Controls_Manager::SELECT,
-				'default' => 'panda',
+				'default' => 'antelope',
 				'options' => array(
 					'antelope' => __( 'Antelope', 'cmt-elementor-addons' ),
 					'panda'    => __( 'Panda', 'cmt-elementor-addons' ),
@@ -127,7 +127,7 @@ class Cm_Form extends Widget_Base {
 			array(
 				'label'     => __( 'Post Registration Action', 'cmt-elementor-addons' ),
 				'type'      => Controls_Manager::SELECT,
-				'default'   => 'Webtrader',
+				'default'   => 'CRM',
 				'options'   => array(
 					'CRM'       => __( 'CRM', 'cmt-elementor-addons' ),
 					'ThankYou'  => __( 'Thank You', 'cmt-elementor-addons' ),
@@ -1134,6 +1134,11 @@ class Cm_Form extends Widget_Base {
 					<?php if ( $settings['form_action'] === 'panda' ) : ?>
 						<input type="hidden" name="postRegistrationAction"
 						       value="<?php echo esc_attr( $settings['post_panda_reg_action'] ); ?>"/>
+					<?php endif; ?>
+
+					<?php if ( $settings['form_action'] === 'antelope' ) : ?>
+						<input type="hidden" name="postRegistrationAction"
+						       value="<?php echo esc_attr( $settings['post_antelope_reg_action'] ); ?>"/>
 					<?php endif; ?>
 
 					<?php if ( $settings['include_referrer'] ) : ?>

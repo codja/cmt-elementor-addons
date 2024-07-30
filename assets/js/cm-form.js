@@ -117,6 +117,8 @@ class FormHandlerClass extends elementorModules.frontend.handlers.Base {
 
 	constructor( ...$props ) {
 		super( ...$props );
+
+		this.copyPhoneCountryCode(this.elements.$formCountry[0]);
 	}
 
 	getDefaultSettings() {
