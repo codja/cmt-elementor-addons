@@ -18,11 +18,15 @@ class Antelope extends Client {
 	const API_ENDPOINT = 'registerUser';
 
 	public function post( \WP_REST_Request $request ) {
+		if ( ! defined( 'ANTILOPE_API_AFFILIATE_KEY' ) ) {
+			wp_send_json_error( esc_html__( 'Check constants', 'cmt-elementor-addons' ) );
+		}
+
 		$response = $this->get_data( $request, true );
 		$success  = $response['response']['success'] ?? false;
 
 		if ( ! $success ) {
-			wp_send_json_error( $response['response']['error']['errorDetails'] ?? __( 'Unknown error', 'cmt-elementor-addons' ) );
+			wp_send_json_error( $response['response']['error']['errorDetails'] ?? esc_html__( 'Unknown error', 'cmt-elementor-addons' ) );
 		}
 
 		$result = [
