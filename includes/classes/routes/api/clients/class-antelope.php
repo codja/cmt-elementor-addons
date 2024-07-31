@@ -62,7 +62,7 @@ class Antelope extends Client {
 		}
 
 		return [
-			'success' => ! empty( $link_if_customer_exists ) || 'ok' === $response['data']['status'],
+			'success' => ! empty( $link_if_customer_exists ) || $response['success'] ?? false,
 			'link'    => $link_if_customer_exists ?? Form_Redirect_Link::get( $request, $response ),
 		];
 	}
