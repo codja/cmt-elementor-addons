@@ -11,6 +11,10 @@
     margin: 0 auto;
 }
 
+.cm-form-container.horizontal {
+	max-width: 1200px;
+}
+
 .cm-form-wrap {
 	padding: 20px;
 }
@@ -19,9 +23,11 @@
     width: 100%;
 }
 
-.cm-form input[type=date], .cm-form input[type=email], .cm-form input[type=number], .cm-form input[type=password], .cm-form input[type=search],
-.cm-form input[type=tel], .cm-form input[type=text], .cm-form select, .cm-form textarea, .cm-form input[type=phone] {
+.cm-form input,
+.cm-form select,
+.cm-form textarea {
     width: 100%;
+	height: 40px;
     border: 1px solid #666;
     border-radius: 3px;
     padding: .5rem 1rem;
@@ -30,12 +36,15 @@
     transition: all .3s;
 }
 
+.cm-form input[type=checkbox] {
+	height: initial;
+}
+
 .cm-form input, .cm-form select {
-    width: 100%;
     background-size: 15px;
     background-repeat: no-repeat;
     background-position: 5px center;
-    padding-left: 25px !important;
+    padding-left: 25px;
 }
 
 .cm-form input[type=button], .cm-form input[type=submit], .cm-form button {
@@ -141,23 +150,31 @@ input[type=number] {
     display: inline-block;
 }
 
+.cm-form-terms-text p {
+	margin-bottom: 0;
+}
+
+.cm-form input.cm-form-phone-prefix {
+	padding-left: 15px;
+}
+
 .cm-form-phone-container {
     display: flex;
 	flex-wrap: wrap;
 }
 
-.cm-form-phone {
-    width: 66% !important;
+.cm-form input.cm-form-phone {
+    width: 68%;
 }
 
-.cm-form-phone-prefix {
-    width: 30% !important;
-    margin-right: 10px;
+.cm-form input.cm-form-phone-prefix {
+    width: 30%;
+    margin-right: 1%;
 }
 
 .ar-SA .cm-form .cm-form-phone-prefix {
     order: 2;
-    padding-right: 10px !important;
+    padding-right: 1% !important;
     background-color: #ffffff;
     opacity: 1;
 }
@@ -167,6 +184,7 @@ input[type=number] {
 	background-color: #f8d017;
     color: #000000;
 	width: 100%;
+	padding: .5rem 1rem;
 }
 
 .cm-form-submit_loader::after{
@@ -390,6 +408,12 @@ input[type=number] {
 }
 
 @media (max-width: 600px) {
+	.cm-form-container.horizontal .cm-form {
+		display: block;
+	}
+	.cm-form-container.horizontal .cm-form-terms-container {
+		margin-top: 15px;
+	}
 	.cm-form-container_popup .cm-form-wrap {
 		height: 100vh;
 		width: 100vw;
@@ -440,26 +464,33 @@ input[type=number] {
 }
 
 @media screen and (min-width: 981px) {
-    .horizontal.cm-form-container {
-        max-width: 1200px;
-    }
+    /*.horizontal.cm-form-container {*/
+    /*    max-width: 1200px;*/
+    /*}*/
 
     .horizontal .cm-form {
-        display: flex;
-        flex-wrap: wrap;
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		column-gap: 16px;
+		row-gap: 15px;
     }
 
+	.horizontal .cm-form-terms-container {
+		grid-column-start: 1;
+		grid-column-end: 4
+	}
+
     .horizontal .cm-form-input-container {
-        width: 30%;
+        width: 100%;
     }
 
     .horizontal .cm-form-firstname-container {
-        order: 1;
+        /*order: 1;*/
         margin-right: 4.5%;
     }
 
     .horizontal .cm-form-lastname-container {
-        order: 2;
+        /*order: 2;*/
         margin-right: 4.5%;
     }
 
@@ -474,17 +505,17 @@ input[type=number] {
     }
 
     .horizontal .cm-form-phone-container {
-        order: 3;
+        /*order: 3;*/
         margin-right: 0px;
     }
 
     .horizontal .cm-form-email-container {
-        order: 4;
+        /*order: 4;*/
         margin-right: 4.5%;
     }
 
     .horizontal .cm-form-country-container {
-        order: 5;
+        /*order: 5;*/
         margin-right: 4.5%;
     }
 
@@ -499,12 +530,12 @@ input[type=number] {
     }
 
     .horizontal .cm-form-submit-container {
-        order: 6;
+        /*order: 6;*/
         margin-right: 0px;
     }
 
     .horizontal .cm-form-terms-container {
-        order: 7;
+        /*order: 7;*/
         width: 100%;
         margin-right: 0px;
         text-align: center !important;

@@ -1226,9 +1226,10 @@ class Cm_Form extends Widget_Base {
 					<?php endif;
 
 					$type_password_input = $settings['show_password'] ? 'password' : 'hidden';
+					$password_hide_class = $settings['show_password'] ? '' : 'cm-form-hidden';
 					$password_value      = $settings['password_autogenerate'] || ! $settings['show_password'] ? Helpers::instance()->random_password() : '';
 					?>
-					<div class='cm-form-input-container cm-form-password-container'>
+					<div class='cm-form-input-container cm-form-password-container <?php echo esc_attr( $password_hide_class ); ?>'>
 						<input
 							id='password'
 							style='font-family: <?php echo esc_attr( $settings['font_family'] ); ?>;'

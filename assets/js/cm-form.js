@@ -339,7 +339,7 @@ class FormHandlerClass extends elementorModules.frontend.handlers.Base {
 					const agreeCheckbox = document.getElementById("agree");
 					const agreeError = document.getElementById("agree-error");
 
-					if (!agreeCheckbox.checked) {
+					if (!agreeCheckbox.checked && agreeError) {
 						SendOK = false;
 						agreeError.style.display = "block"; // Show the error message
 						agreeCheckbox.classList.add("error"); // Add the error class
