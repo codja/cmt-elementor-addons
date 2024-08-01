@@ -606,15 +606,6 @@ class Cm_Form extends Widget_Base {
 		);
 
 		$this->add_control(
-			'phone_error',
-			array(
-				'label'     => __( 'Phone Error Text', 'cmt-elementor-addons' ),
-				'type'      => Controls_Manager::TEXT,
-				'condition' => array( 'show_phone' => 'yes' ),
-			)
-		);
-
-		$this->add_control(
 			'phone_digits_error',
 			array(
 				'label'     => __( 'Phone Digits Error Text', 'cmt-elementor-addons' ),
@@ -1219,8 +1210,6 @@ class Cm_Form extends Widget_Base {
 							       type="phone" pattern="\d*" name="phone" class="cm-form-phone"
 							       placeholder="<?php echo esc_attr( $settings['phone_placeholder'] ); ?>"/>
 							<p id="phone-error" class="cm-form-error"
-							   style="color: <?php echo esc_attr( $settings['error_color'] ); ?>; font-family: <?php echo esc_attr( $settings['font_family'] ); ?>;"><?php echo esc_html( $settings['phone_error'] ); ?></p>
-							<p id="phone-digits-error" class="cm-form-error"
 							   style="color: <?php echo esc_attr( $settings['error_color'] ); ?>; font-family: <?php echo esc_attr( $settings['font_family'] ); ?>;"><?php echo esc_html( $settings['phone_digits_error'] ); ?></p>
 						</div>
 					<?php endif;
@@ -1364,8 +1353,7 @@ class Cm_Form extends Widget_Base {
 						<div class='cm-form-input-container cm-form-phone-container'>
 							<input id='phonecountry' type='phone' style='font-family: {{{settings.font_family}}};' name='phonecountry' value='+' class='cm-form-phone-prefix' readonly />
 							<input id='phone' style='font-family: {{{settings.font_family}}};' type='phone' pattern='\d*' name='phone' class='cm-form-phone' placeholder='{{{settings.phone_placeholder}}}' />
-							<p id='phone-error' class='cm-form-error' style='color: {{{settings.error_color}}}; font-family: {{{settings.font_family}}};'>{{{settings.phone_error}}}</p>
-							<p id='phone-digits-error' class='cm-form-error' style='color: {{{settings.error_color}}}; font-family: {{{settings.font_family}}};'>{{{settings.phone_digits_error}}}</p>
+							<p id='phone-error' class='cm-form-error' style='color: {{{settings.error_color}}}; font-family: {{{settings.font_family}}};'>{{{settings.phone_digits_error}}}</p>
 						</div>
 					<# } #>
 

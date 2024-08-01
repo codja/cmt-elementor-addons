@@ -255,7 +255,6 @@ class FormHandlerClass extends elementorModules.frontend.handlers.Base {
 
 	validateFields(fields, form) {
 		let SendOK = true;
-		form.querySelector("#phone-digits-error").style.display = 'none';
 
 		fields.forEach((field) => {
 			const fieldElement = form.querySelector(`[name=${field}]`);
@@ -291,7 +290,7 @@ class FormHandlerClass extends elementorModules.frontend.handlers.Base {
 					break;
 				case 'phone':
 					if (!/^\d{6,12}$/.test(value)) {
-						form.querySelector("#phone-digits-error").style.display = 'block';
+						form.querySelector("#phone-error").style.display = 'block';
 						fieldElement.classList.add("error");
 						SendOK = false;
 					} else {
