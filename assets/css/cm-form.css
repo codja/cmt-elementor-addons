@@ -179,6 +179,10 @@ input[type=number] {
     opacity: 1;
 }
 
+.ar-SA .cm-form .cm-form-phone-container .cm-form-error {
+	order: 3;
+}
+
 .cm-form-submit {
 	position: relative;
 	background-color: #f8d017;
