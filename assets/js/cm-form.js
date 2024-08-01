@@ -57,7 +57,6 @@ class EmailSuggestions {
 		[...this.suggestions.children].forEach( ( elem ) => {
 			elem.addEventListener( 'click', ( evt ) => {
 				this.emailInput.value = elem.textContent;
-				$( '.cm-form-email' ).trigger( 'input' );
 				this.emailInput.dispatchEvent( new Event( 'input' ) );
 				this.tooltipSuggestions.hide();
 			} );
@@ -256,6 +255,7 @@ class FormHandlerClass extends elementorModules.frontend.handlers.Base {
 
 	validateFields(fields, form) {
 		let SendOK = true;
+		form.querySelector("#phone-digits-error").style.display = 'none';
 
 		fields.forEach((field) => {
 			const fieldElement = form.querySelector(`[name=${field}]`);
@@ -268,7 +268,6 @@ class FormHandlerClass extends elementorModules.frontend.handlers.Base {
 			if (errorBlock) {
 				errorBlock.style.display = 'none';
 			}
-			form.querySelector("#phone-digits-error").style.display = 'none';
 
 			switch (field) {
 				case 'firstname':
