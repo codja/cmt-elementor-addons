@@ -1261,7 +1261,7 @@ class Cm_Form extends Widget_Base {
 
 					<div class="cm-form-submit-container">
 						<button type="submit" class="cm-form-submit"
-						        style="background-color: <?php echo esc_attr( $settings['submit_bg_color'] ); ?>; color: <?php echo esc_attr( $settings['submit_color'] ); ?>; font-family: <?php echo esc_attr( $settings['submit_font_family'] ); ?>; font-size: <?php echo esc_attr( $settings['submit_font_size'] ); ?>px; font-weight: <?php echo esc_attr( $settings['submit_font_weight'] ); ?>;">
+							style="background-color: <?php echo esc_attr( $settings['submit_background'] ); ?>; color: <?php echo esc_attr( $settings['submit_color'] ); ?>; font-family: <?php echo esc_attr( $settings['submit_font_family'] ); ?>; font-size: <?php echo esc_attr( $settings['submit_size'] ); ?>px; font-weight: <?php echo esc_attr( $settings['submit_font_weight'] ); ?>;">
 							<?php echo esc_html( $settings['submit_text'] ); ?>
 						</button>
 					</div>
