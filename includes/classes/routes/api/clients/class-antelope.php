@@ -11,6 +11,7 @@ class Antelope extends Client {
 		'referral'           => 'referral',
 		'sc'                 => 'clientSource',
 		'trackingcampaignId' => 'campaignCode',
+		'p6'                 => 'p6',
 	];
 
 	const BASE_URL_API = 'https://api.cmtrading.com/SignalsServer/api/';
@@ -133,6 +134,7 @@ class Antelope extends Client {
 
 		// Extract 'campaign_code' from referral data
 		$campaign_code = $referral_data['campaign_code'] ?? '';
+		$p6            = $referral_data['p6'] ?? '';
 
 		// Rebuild the 'referral' string from the remaining referral data
 		$referral_back = [];
@@ -144,6 +146,7 @@ class Antelope extends Client {
 		return [
 			'clientSource' => $client_source,
 			'campaignCode' => $campaign_code,
+			'p6'           => $p6,
 			'referral'     => $referral,
 		];
 	}
