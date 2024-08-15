@@ -142,9 +142,9 @@ class Antelope extends Client {
 		$referral = implode( '|', $referral_back );
 
 		return [
-			'clientSource'       => $client_source,
-			'trackingcampaignId' => $campaign_code,
-			'referral'           => $referral,
+			'clientSource' => $client_source,
+			'campaignCode' => $campaign_code,
+			'referral'     => $referral,
 		];
 	}
 
